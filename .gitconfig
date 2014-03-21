@@ -1,0 +1,29 @@
+[user]
+    name = <NAME>
+    email = <EMAIL>
+[core]
+    editor = "subl -w"
+[color]
+    ui = true
+    branch = true
+[push]
+    default = current
+[branch]
+    autosetuprebase = always
+[alias]
+    hard = reset --hard
+    mote = remote -v
+    refresh = remote update -p
+    fixup = commit --amend -C HEAD
+
+    s = status -s
+    s- = status
+    back = reset HEAD^
+    b = branch
+    b- = branch -a
+
+    surgery = "!sh -c 'git rebase -i HEAD~$1' -"
+    rno = rebase --abort
+    ryes = rebase --continue
+
+    unstage = reset HEAD --
