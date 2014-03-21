@@ -23,3 +23,11 @@ function gl()
     --date=relative \
     -$commit_num
 }
+
+# Cat contents of a file between provided line numbers
+# Usage:
+# catline <LINE_START> <LINE_END> <FILE>
+function catline()
+{
+   sed -n -e "$1,$2 p" -e "$2 q" $3
+}
