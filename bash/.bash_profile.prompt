@@ -22,16 +22,3 @@ reset=$(tput -Txterm sgr0)
 
 # prompt
 PS1='\[$bold\]\[$black\][\[$red\]\u\[$black\]@\[$red\]\h\[$black\]]-[\[$yellow\]\w\[$black\]]\[$green\]$(__git_ps1)\n\[$reset\]> '
-
-# helpers
-if [ -f /usr/local/etc/bash_completion.d/git-completion.bash ]; then
-    source /usr/local/etc/bash_completion.d/git-completion.bash
-fi
-
-if [ -f ~/.nvm/nvm.sh ]; then
-    source ~/.nvm/nvm.sh
-fi
-
-if [ -f ~/.rvm/scripts/rvm ]; then
-    source ~/.rvm/scripts/rvm
-fi
