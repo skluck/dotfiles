@@ -1,0 +1,37 @@
+# git in prompt
+__git_ps1 ()
+{
+    local b="$(git symbolic-ref HEAD 2>/dev/null)";
+    if [ -n "$b" ]; then
+        printf " (%s) " "${b##refs/heads/}";
+    fi
+}
+
+# colors
+black=$(tput -Txterm setaf 0)
+red=$(tput -Txterm setaf 1)
+green=$(tput -Txterm setaf 2)
+yellow=$(tput -Txterm setaf 3)
+blue=$(tput -Txterm setaf 4)
+purple=$(tput -Txterm setaf 5)
+cyan=$(tput -Txterm setaf 6)
+grey=$(tput -Txterm setaf 7)
+
+bold=$(tput -Txterm bold)
+reset=$(tput -Txterm sgr0)
+
+# prompt
+PS1='\[$bold\]\[$black\][\[$red\]\u\[$black\]@\[$red\]\h\[$black\]]-[\[$yellow\]\w\[$black\]]\[$green\]$(__git_ps1)\n\[$reset\]> '
+
+# helpers
+if [ -f /usr/local/etc/bash_completion.d/git-completion.bash ]; then
+    source /usr/local/etc/bash_completion.d/git-completion.bash
+fi
+
+if [ -f ~/.nvm/nvm.sh ]; then
+    source ~/.nvm/nvm.sh
+fi
+
+if [ -f ~/.rvm/scripts/rvm ]; then
+    source ~/.rvm/scripts/rvm
+fi
