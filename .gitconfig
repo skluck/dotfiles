@@ -1,7 +1,8 @@
 [user]
-    name = <NAME>
-    email = <EMAIL>
+    name = Steve Kluck
+    email = skluck@gmail.com
 [core]
+    excludesfile = ~/.gitignore-global
     editor = "subl -w"
 [color]
     ui = true
@@ -10,20 +11,30 @@
     default = current
 [branch]
     autosetuprebase = always
+    autosetupmerge = false
 [alias]
-    hard = reset --hard
     mote = remote -v
     refresh = remote update -p
+
     fixup = commit --amend -C HEAD
+    hard = reset --hard
+    yolo = push --force
+    unstage = reset HEAD --
+
+    lg = log --graph --pretty=format:"%C(bold red)%h%C(reset) -%C(cyan)%d%C(reset) %s %C(yellow)(%cr) %C(green)<%an>%C(reset)" --abbrev-commit --date=relative
 
     s = status -s
     s- = status
-    back = reset HEAD^
+
     b = branch
     b- = branch -a
+
+    back = reset HEAD^
 
     surgery = "!sh -c 'git rebase -i HEAD~$1' -"
     rno = rebase --abort
     ryes = rebase --continue
 
-    unstage = reset HEAD --
+    pick = cherry-pick
+    pyes = cherry-pick --continue
+    pno = cherry-pick --abort
