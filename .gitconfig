@@ -15,13 +15,14 @@
 [alias]
     mote = remote -v
     refresh = remote update -p
+    new = checkout origin/master -b
 
     fixup = commit --amend -C HEAD
     hard = reset --hard
     yolo = push --force
     unstage = reset HEAD --
 
-    lg = log --graph --pretty=tformat:"%C(bold red)%h%C(reset) -%C(cyan)%d%C(reset) %s %C(yellow)(%cr) %C(green)<%an>%C(reset)" --abbrev-commit --date=relative
+    lg = log --graph --pretty=tformat:'%C(bold red)%h%C(reset) -%C(cyan)%d%C(reset) %s %C(yellow)(%cr) %C(green)<%an>%C(reset)' --abbrev-commit --date=relative
 
     s = status -s
     s- = status
