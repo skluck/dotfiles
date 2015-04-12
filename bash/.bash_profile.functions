@@ -1,6 +1,6 @@
 function l()
 {
-    ls -halFSG $@
+    ls -halFG $@
 }
 
 # git helpers
