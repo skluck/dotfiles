@@ -1,12 +1,14 @@
 [user]
     name = Steve Kluck
-    email = skluck@gmail.com
+    email = steve@kluck.engineering
 [core]
     excludesfile = ~/.gitignore-global
     editor = "subl -w"
 [color]
     ui = true
     branch = true
+[format]
+    pretty = format:"%C(bold red)%h%C(reset) -%C(cyan)%d%C(reset) %s %C(yellow)(%cr) %C(green)<%an>%C(reset)"
 [push]
     default = current
 [branch]
