@@ -3,7 +3,7 @@
     email = steve@kluck.engineering
 
 [includeIf "gitdir:~/Projects/github.com/"]
-    path = ~/.gitconfig_github_com
+    path = ~/.gitconfig-github.com
 
 [core]
     excludesfile = ~/.gitignore-global
