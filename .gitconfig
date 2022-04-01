@@ -4,16 +4,22 @@
 [core]
     excludesfile = ~/.gitignore-global
     editor = "subl -w"
+    pager = diff-so-fancy | less --tabs=4 -RFX
+
 [color]
     ui = true
     branch = true
 [format]
     pretty = format:"%C(bold red)%h%C(reset) -%C(cyan)%d%C(reset) %s %C(yellow)(%cr) %C(green)<%an>%C(reset)"
+
 [push]
     default = current
 [branch]
     autosetuprebase = always
     autosetupmerge = false
+[merge]
+    conflictstyle = diff3
+
 [alias]
     mote = remote -v
     refresh = remote update -p
@@ -24,6 +30,7 @@
     yolo = push --force
     unstage = reset HEAD --
 
+    fshow = show --name-only
     lg = log --graph --abbrev-commit --date=relative
 
     s = status -s
@@ -41,3 +48,22 @@
     pick = cherry-pick
     pyes = cherry-pick --continue
     pno = cherry-pick --abort
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+[color "diff"]
+	meta = yellow
+	frag = magenta bold
+	commit = yellow bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
