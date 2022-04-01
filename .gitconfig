@@ -1,10 +1,15 @@
 [user]
     name = Steve Kluck
     email = steve@kluck.engineering
+
+[includeIf "gitdir:~/Projects/github.com/"]
+    path = ~/.gitconfig_github_com
+
 [core]
     excludesfile = ~/.gitignore-global
     editor = "subl -w"
-    pager = diff-so-fancy | less --tabs=4 -RFX
+    #pager = diff-so-fancy | less --tabs=4 -RFX
+    page = delta
 
 [color]
     ui = true
@@ -19,6 +24,9 @@
     autosetupmerge = false
 [merge]
     conflictstyle = diff3
+[pull]
+    rebase = true
+    ff = only
 
 [alias]
     mote = remote -v
@@ -67,3 +75,8 @@
 	old = red bold
 	new = green bold
 	whitespace = red reverse
+[interactive]
+    diffFilter = delta --color-only
+[delta]
+    features = line-numbers decorations
+    whitespace-error-style = 22 reverse
