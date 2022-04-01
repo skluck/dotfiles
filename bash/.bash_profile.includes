@@ -1,15 +1,15 @@
-if [ -f "$HOME/.bashrc" ]; then
-    source "$HOME/.bashrc"
-fi
+# rc
+[ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 
-if [ -f "$HOME/.nvm/nvm.sh" ]; then
-    source "$HOME/.nvm/nvm.sh"
-fi
+# fzf
+[ -f "$HOME/.fzf.bash" ] && source "$HOME/.fzf.bash"
 
-if [ -f "$HOME/.rvm/scripts/rvm" ]; then
-    source "$HOME/.rvm/scripts/rvm"
-fi
+# nvm
+NVM_PATH="$HOME/homebrew/opt/nvm"
+[ -f "$NVM_PATH/nvm.sh" ] && export NVM_DIR="$HOME/.nvm" && source "$NVM_PATH/nvm.sh"
+[ -f "$NVM_PATH/nvm.sh" ] && nvm use default
 
-if [ -f /usr/local/etc/bash_completion.d/git-completion.bash ]; then
-    source /usr/local/etc/bash_completion.d/git-completion.bash
-fi
+# git auto completion
+GIT_COMPLETION_PATH="$HOME/homebrew/etc/bash_completion.d"
+[ -f "$GIT_COMPLETION_PATH/git-completion.bash" ] && source "$GIT_COMPLETION_PATH/git-completion.bash"
+[ -f "$GIT_COMPLETION_PATH/git-prompt.sh" ]       && source "$GIT_COMPLETION_PATH/git-prompt.sh"
