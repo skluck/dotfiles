@@ -3,6 +3,12 @@ function l()
     ls -halFG $@
 }
 
+# docker helpers
+function drun()
+{
+    docker run --rm -it $@
+}
+
 # git helpers
 function g()
 {
@@ -11,19 +17,55 @@ function g()
 
 function gl()
 {
-    local commit_num=30
-    if [ ! -z $1 ] ; then
-        local_num=$1
+    if [[ -z $1 ]]; then
+        local commit_num=30
+    else
+        local commit_num=$1
     fi
 
-    git log \
+    git lg \
     --graph \
-    --pretty=format:"%C(bold red)%h%C(reset) -%C(cyan)%d%C(reset) %s %C(yellow)(%cr) %C(green)<%an>%C(reset)" \
     --abbrev-commit \
     --date=relative \
     -$commit_num
 }
 
+# bash helpers
+function editbash()
+{
+    subl ~/.bash_profile ~/.bash_profile.functions ~/.bash_profile.includes ~/.bashrc
+}
+
+function reloadbash()
+{
+    source ~/.bash_profile
+}
+
+# aws helpers
+function ecrup()
+{
+    local extra=""
+    local -r default_region="us-east-1"
+
+    if [ -n "${1}" ] ; then
+        extra="--region ${1}"
+    else
+        extra="--region $default_region"
+    fi
+
+    eval $(aws ecr get-login --no-include-email $extra)
+}
+
+function awsup()
+{
+    eval $(aws_import_creds.sh)
+}
+
+# Get public key for authorized_keys from a private key
+function getpubkey()
+{
+    ssh-keygen -y -f $@
+}
 
 # Cat contents of a file between provided line numbers
 # Usage:
