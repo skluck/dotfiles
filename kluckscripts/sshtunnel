@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+log() {
+    local readonly msg="$@"
+    >&2 echo -e "$msg"
+}
+
+pause() {
+  read -n1 -rp $'Press any key to close tunnel. (DO NOT PRESS CTRL-C)\n' key
+}
+
+ensure_not_empty() {
+    local readonly arg_name="$1"
+    local readonly arg_value="$2"
+
+    if [[ -z "${arg_value}" ]]; then
+        log "ERROR: The value for '${arg_name}' cannot be empty"
+
+        echo; log "Use "--help" to see usage instructions"
+        exit 1
+    fi
+}
+
+generate_key() {
+    # Not used
+    return
+}
+
+send_key() {
+    # Not used
+    return
+}
+
+create_tunnel() {
+    local readonly region="$1"
+    local readonly local_port="$2"
+    local readonly remote_host="$3"
+    local readonly ssh_key="$4"
+    local readonly connection="$5"
+    local readonly sock_file="$6"
+
+    echo ; echo "# -----------------------------------------------------------------------------"
+    echo "Creating SSH tunnel to ${remote_host}"
+    echo "# -----------------------------------------------------------------------------" ; echo
+
+    ssh \
+        -i ${ssh_key} \
+        -S ${sock_file} \
+        -Nf -M \
+        -L ${local_port}:${remote_host} \
+        -o "UserKnownHostsFile=/dev/null" \
+        -o "StrictHostKeyChecking=no" \
+        ${connection}
+
+
+    echo
+    echo "Established Tunnel:"
+    echo "  - Instance: ${instance_user}@${instance_id}"
+    echo "  - Remote Host: ${remote_host}"
+    echo
+    echo "Connect to:"
+    echo "  - Local Host: 127.0.0.1:${local_port}"
+    echo
+}
+
+monitor_tunnel() {
+    local readonly sock_file="$1"
+
+    echo "Monitoring...."
+    pause
+
+    echo "Closing SSH tunnel..."
+    ssh \
+        -S "${sock_file}" \
+        -O exit \
+        *
+}
+
+stop() {
+    local readonly temp_dir="$1"
+    local readonly sock_file="$2"
+    local readonly local_port="$3"
+
+    if [ -f "${sock_file}" ] ; then
+        echo "Aborting SSH tunnel..."
+        ssh \
+            -S "${sock_file}" \
+            -O exit \
+            *
+    fi
+
+    if [ -d "${temp_dir}" ] ; then
+        rm -rf "${temp_dir}"
+    fi
+
+    kill $(lsof -t -i :${local_port})
+}
+
+print_tunnel_usage() {
+    local readonly script="$1"
+    local readonly instance="$2"
+    local readonly port="$3"
+    local readonly host="$4"
+
+    echo "${script} \\"
+    echo "    --ip ${instance} \\"
+    echo "    --local-port ${port} \\"
+    echo "    --host ${host}"
+}
+
+print_usage() {
+    local readonly script="$1"
+    echo
+    echo "Usage: ${script} [OPTIONS]"
+    echo
+    echo "This script is used to:"
+    echo -e "  - Generate temporary private key"
+    echo -e "  - Send key to target instance"
+    echo -e "  - Open a tunnel to the instance"
+    echo -e "  - Monitor the tunnel and close the session when finished"
+    echo
+    echo "Requirements:"
+    echo
+    echo -e "  EC2 Instance\t\tA bastion instance must be exist with SSM Installed."
+    echo -e "  AWS\t\t\tEnsure AWS CLI is installed."
+    echo -e "  ssh\t\t\tEnsure ssh and ssh-keygen are installed."
+    echo
+    echo "Required:"
+    echo
+    echo -e "  --ip\t\tThe IP of the instance."
+    echo -e "  --host\t\tThe remote host:port to proxy to."
+    echo
+    echo "Optional:"
+    echo
+    echo -e "  --local-port\t\tThe local port to proxy to. Optional (defaults to TUNNEL_LOCAL_PORT)."
+    echo -e "  --user\t\tThe user of the instance. Optional (defaults to 'ec2-user')."
+    echo
+    echo "Example:"
+    echo
+    print_tunnel_usage "${script}" "127.127.0.1" "33066" "mydatabase.example.com:3306"
+    echo
+}
+
+run_script() {
+    local aws_region="xxxxxx"
+    local instance_user="ec2-user"
+    local instance_ip
+
+    local local_port="${TUNNEL_LOCAL_PORT}"
+    local remote_host
+
+    local load_help=false
+
+    while [[ $# > 0 ]]; do
+        local key="$1"
+
+        case "$key" in
+            --help)
+                load_help=true
+                ;;
+            --ip)
+                instance_ip="$2" ; shift
+                ;;
+            --region)
+                aws_region="$2" ; shift
+                ;;
+            --user)
+                instance_user="$2" ; shift
+                ;;
+            --local-port)
+                local_port="$2" ; shift
+                ;;
+            --host)
+                remote_host="$2" ; shift
+                ;;
+            *)
+                echo "ERROR: Unrecognized argument: $key"
+                exit 1
+                ;;
+        esac
+
+        [[ $# > 0 ]] && shift;
+    done
+
+    if [ $load_help = true ] ; then
+        print_usage $0
+        exit 0
+    fi
+
+    ensure_not_empty "--region"    "$aws_region"
+    ensure_not_empty "--ip"        "$instance_ip"
+    ensure_not_empty "--user"      "$instance_user"
+
+    ensure_not_empty "--local-port" "$local_port"
+    ensure_not_empty "--host"       "$remote_host"
+
+    temp_dir=$(mktemp -d)
+    temp_sock=${temp_dir}/ssh.sock
+
+    ssh_key="~/.ssh/id_rsa"
+
+    trap "stop ${temp_dir} ${temp_sock} ${local_port}" SIGINT SIGTERM EXIT
+    # Use $(lsof -t -i :$PORT) to find hanging processes
+
+    create_tunnel  "$aws_region" "$local_port" "$remote_host" "${ssh_key}" "${instance_user}@${instance_ip}" "${temp_sock}"
+    monitor_tunnel "${temp_sock}"
+}
+
+run_script $@
+exit 0

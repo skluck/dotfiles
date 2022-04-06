@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+function gitfiles()
+{
+    local from=$1
+    local to=$2
+
+    if [[ -z "$1" ]] && [[ -z "$2" ]] ; then
+        from="master"
+        to="HEAD"
+    fi
+
+    if [ -z "$2" ] ; then
+        to="HEAD"
+    fi
+
+    local stat="--stat-width=160 --stat-count=50000 --stat"
+    if [ -n "$3" ] ; then
+        stat="$3"
+    fi
+
+    echo "$gitfiles \"$from\" \"$to\" \"$stat\""
+    echo
+
+    capture=$(git diff \
+        --color \
+        ${stat} \
+        $from..$to)
+
+    echo "$capture"
+}
+
+gitfiles $@

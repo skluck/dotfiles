@@ -5,4 +5,6 @@
 !/.gitconfig
 !/.gitignore
 !/.gitignore-global
+!/kluckscripts/
+!/kluckscripts/*
 

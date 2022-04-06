@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+function abs_path {
+  (cd "$(dirname '$1')" &>/dev/null && printf "%s/%s" "$PWD" "${1##*/}")
+}
+
+# Copy this file to your path as "tg". Example: /usr/local/bin/tg
+#
+# It will automatically read "VERSIONS" file in the current working directory and switch to the desired binary of
+# terragrunt and terraform.
+#
+# Example:
+#
+# ./VERSIONS
+# terragrunt=terragrunt-0.26.5
+# terraform=terraform-0.13.3
+
+TF_BIN="terraform"
+TG_BIN="terragrunt"
+SECRETS_FILE=""
+VERSIONS_FILE="$(pwd)/VERSIONS"
+
+if [ -f "${VERSIONS_FILE}" ] ; then
+    terragrunt_binary=$(
+        cat "${VERSIONS_FILE}" | \
+        grep -E '^terragrunt\s*=\s*[^\s]+' | tail -1 | cut -d'=' -f2 \
+        | xargs echo || failed=true
+    )
+
+    terraform_binary=$(
+        cat "${VERSIONS_FILE}" | \
+        grep -E '^terraform\s*=\s*[^\s]+' | tail -1 | cut -d'=' -f2 \
+        | xargs echo || failed=true
+    )
+
+    secrets=$(
+        cat "${VERSIONS_FILE}" | \
+        grep -E '^secrets\s*=\s*[^\s]+' | tail -1 | cut -d'=' -f2 \
+        | xargs echo || failed=true
+    )
+
+    if [ -n "${terragrunt_binary}" ] ; then
+        TG_BIN="${terragrunt_binary}"
+        echo "Terragrunt configured: ${terragrunt_binary}" 1>&2
+    fi
+
+    if [ -n "${terraform_binary}" ] ; then
+        TF_BIN="${terraform_binary}"
+        echo "Terraform configured: ${terraform_binary}" 1>&2
+    fi
+
+    if [ -n "${secrets}" ] ; then
+        SECRETS_FILE="${secrets}"
+        echo "Secrets dotenv: ${secrets}" 1>&2
+    fi
+fi
+
+actual_tf=$(which $TF_BIN || true)
+actual_tg=$(which $TG_BIN || true)
+
+if [ -z "${actual_tf}" ] ; then
+    echo "Executable not found: $TF_BIN" 1>&2
+    exit 1
+fi
+
+if [ -z "${actual_tg}" ] ; then
+    echo "Executable not found: $TG_BIN" 1>&2
+    exit 1
+fi
+
+if [ -n "${SECRETS_FILE}" ] ; then
+    actual_secrets=$(bash -c "echo $SECRETS_FILE")
+    if [[ ! -f ${actual_secrets} ]] ; then
+        echo "ERROR: Secrets file not found: ${actual_secrets}"
+        exit 1
+    fi
+
+    set -a # allexport
+    . "${actual_secrets}"
+    set +a # allexport
+fi
+
+export TERRAGRUNT_TFPATH="$actual_tf"
+
+$actual_tg $@
+exit 0

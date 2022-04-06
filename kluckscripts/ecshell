@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+function ecshell()
+{
+    local region="us-east-1"
+    local cluster_name="$1"
+    local service_name="$2"
+
+    local -r container_name="web"
+    local -r task_num="0"
+
+    if [ -z "${cluster_name}" ] ; then
+        echo "ERROR: Please provide ECS cluster name (first arg)"
+        return
+    fi
+
+    if [ -z "${service_name}" ] ; then
+        echo "ERROR: Please provide ECS service name (second arg)"
+        return
+    fi
+
+    task_arn=$(aws ecs list-tasks \
+        --region "${region}" \
+        --cluster "${cluster_name}" \
+        --service-name "${service_name}" \
+        | jq -r .taskArns[${task_num}] \
+    )
+
+    echo "Task ARN: ${task_arn}"
+    task_id=$(echo $task_arn | rev | cut -d '/' -f1 | rev)
+
+    if [ -z "${task_id}" ] ; then
+        echo "ERROR: No task definition ARN/ID found."
+        return
+    fi
+
+    echo "Task ID: ${task_id}"
+
+    aws ecs execute-command  \
+        --region "${region}" \
+        --cluster "${cluster_name}" \
+        --task "${task_id}" \
+        --container "${container_name}" \
+        --command "/bin/bash" \
+        --interactive
+}
+
+ecshell $@
