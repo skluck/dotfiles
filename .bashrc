@@ -1,4 +1,4 @@
-export PATH="/usr/local/bin:$PATH"
+export PATH="$HOME/bin:$HOME/homebrew/bin:$PATH"
 
 export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
 export HOMEBREW_NO_AUTO_UPDATE=1

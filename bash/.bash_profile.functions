@@ -33,7 +33,7 @@ function gl()
 # bash helpers
 function editbash()
 {
-    subl ~/.bash_profile ~/.bash_profile.functions ~/.bash_profile.includes ~/.bashrc
+    subl ~/.bash_profile ~/.bashrc ~/bash
 }
 
 function reloadbash()

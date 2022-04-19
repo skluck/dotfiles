@@ -1,6 +1,6 @@
 [user]
     name = Steve Kluck
-    email = steve@kluck.engineering
+    email = 3161125+skluck@users.noreply.github.com
 
 [includeIf "gitdir:~/Projects/github.com/"]
     path = ~/.gitconfig-github.com
@@ -41,8 +41,7 @@
     fshow = show --name-only
     lg = log --graph --abbrev-commit --date=relative
 
-    s = status -s
-    s- = status
+    d = diff --staged
 
     b = branch
     b- = branch -a

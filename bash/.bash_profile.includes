@@ -5,9 +5,10 @@
 [ -f "$HOME/.fzf.bash" ] && source "$HOME/.fzf.bash"
 
 # nvm
-NVM_PATH="$HOME/homebrew/opt/nvm"
-[ -f "$NVM_PATH/nvm.sh" ] && export NVM_DIR="$HOME/.nvm" && source "$NVM_PATH/nvm.sh"
+NVM_PATH="$HOME/.nvm"
+[ -f "$NVM_PATH/nvm.sh" ] && export NVM_DIR="$NVM_PATH" && source "$NVM_DIR/nvm.sh"
 [ -f "$NVM_PATH/nvm.sh" ] && nvm use default
+[ -f "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # git auto completion
 GIT_COMPLETION_PATH="$HOME/homebrew/etc/bash_completion.d"
