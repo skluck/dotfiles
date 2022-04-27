@@ -1,0 +1,76 @@
+function l()
+{
+    ls -halFG $@
+}
+
+# docker helpers
+function drun()
+{
+    docker run --rm -it $@
+}
+
+# git helpers
+function g()
+{
+    git status -s
+}
+
+function gl()
+{
+    if [[ -z $1 ]]; then
+        local commit_num=30
+    else
+        local commit_num=$1
+    fi
+
+    git lg \
+    --graph \
+    --abbrev-commit \
+    --date=relative \
+    -$commit_num
+}
+
+# bash helpers
+function editbash()
+{
+    subl ~/.zprofile ~/.zshrc ~/zshell
+}
+
+function reloadbash()
+{
+    source ~/.zprofile
+}
+
+# aws helpers
+function ecrup()
+{
+    local extra=""
+    local -r default_region="us-east-1"
+
+    if [ -n "${1}" ] ; then
+        extra="--region ${1}"
+    else
+        extra="--region $default_region"
+    fi
+
+    eval $(aws ecr get-login --no-include-email $extra)
+}
+
+function awsup()
+{
+    eval $(aws_import_creds.sh)
+}
+
+# Get public key for authorized_keys from a private key
+function getpubkey()
+{
+    ssh-keygen -y -f $@
+}
+
+# Cat contents of a file between provided line numbers
+# Usage:
+# catline <LINE_START> <LINE_END> <FILE>
+function catline()
+{
+   sed -n -e "$1,$2 p" -e "$2 q" $3
+}

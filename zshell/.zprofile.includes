@@ -1,0 +1,16 @@
+# rc
+[ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc"
+
+# fzf
+[ -f "$HOME/.fzf.zsh" ] && source "$HOME/.fzf.zsh"
+
+# nvm
+NVM_PATH="$HOME/.nvm"
+[ -f "$NVM_PATH/nvm.sh" ] && export NVM_DIR="$NVM_PATH" && source "$NVM_DIR/nvm.sh"
+[ -f "$NVM_PATH/nvm.sh" ] && nvm use default
+
+# git auto completion
+FPATH=$HOME/homebrew/share/zsh-completions:$FPATH
+autoload -Uz compinit
+autoload -Uz vcs_info
+compinit
