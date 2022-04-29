@@ -5,6 +5,7 @@
 !/.gitconfig
 !/.gitignore
 !/.gitignore-global
+!/macos-provision.sh
 !/kluckscripts/
 !/kluckscripts/*
 
