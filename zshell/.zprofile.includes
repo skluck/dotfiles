@@ -1,5 +1,6 @@
 # rc
-[ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc"
+# rc is autoloaded fine by zshell
+# [ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc"
 
 # fzf
 [ -f "$HOME/.fzf.zsh" ] && source "$HOME/.fzf.zsh"
@@ -10,7 +11,17 @@ NVM_PATH="$HOME/.nvm"
 [ -f "$NVM_PATH/nvm.sh" ] && nvm use default
 
 # git auto completion
-FPATH=$HOME/homebrew/share/zsh-completions:$FPATH
-autoload -Uz compinit
+if [[ $(command -v brew) ]] ; then
+    FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
+fi
+autoload bashcompinit && bashcompinit
+autoload -Uz compinit && compinit
 autoload -Uz vcs_info
-compinit
+
+# aws auto completion
+if [[ $(command -v aws_completer) ]] ; then
+    complete -C 'aws_completer' aws
+fi
+
+# Prevent pip from installing packages globally
+export PIP_REQUIRE_VIRTUALENV=true
