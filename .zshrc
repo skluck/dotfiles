@@ -1,4 +1,13 @@
-export PATH="$HOME/bin:$HOME/homebrew/bin:$PATH"
+arch=$(uname -m)
+
+# Dynamically load which homebrew binaries based on terminal mode
+HOMEBREW_BIN="$HOME/homebrew/bin"
+if [[ "${arch}" == "x86_64" ]] ; then
+    echo "Loading x86 terminal..."
+    HOMEBREW_BIN="$HOME/homebrew-x86/bin"
+fi
+
+export PATH="$HOME/bin:$HOMEBREW_BIN:$PATH"
 
 export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
 export HOMEBREW_NO_AUTO_UPDATE=1
