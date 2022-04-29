@@ -74,3 +74,21 @@ function catline()
 {
    sed -n -e "$1,$2 p" -e "$2 q" $3
 }
+
+# Add spacer to MacOS dock
+function dock_space()
+{
+   defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}'
+   killall Dock
+}
+
+# Run a script or command with rosetta
+function x86()
+{
+   arch --x86_64 $@
+}
+
+function whatami()
+{
+    uname -m
+}
