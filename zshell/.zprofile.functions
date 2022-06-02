@@ -1,15 +1,39 @@
+# ------------------------------------------------------------------------------
+# posix helpers
+# ------------------------------------------------------------------------------
+
 function l()
 {
     ls -halFG $@
 }
 
+# ------------------------------------------------------------------------------
 # docker helpers
+# ------------------------------------------------------------------------------
+
 function drun()
 {
     docker run --rm -it $@
 }
 
+# ------------------------------------------------------------------------------
+# terraform helpers
+# ------------------------------------------------------------------------------
+
+function tfmt()
+{
+    terraform fmt -write=false -diff -check -recursive $@
+}
+
+function tdocs()
+{
+    terraform-docs markdown table --output-file README.md $@
+}
+
+# ------------------------------------------------------------------------------
 # git helpers
+# ------------------------------------------------------------------------------
+
 function g()
 {
     git status -s
@@ -30,10 +54,18 @@ function gl()
     -$commit_num
 }
 
-# bash helpers
+# ------------------------------------------------------------------------------
+# bash/zsh helpers
+# ------------------------------------------------------------------------------
+
 function editbash()
 {
-    subl ~/.zprofile ~/.zshrc ~/zshell
+    subl \
+        ~/.zprofile \
+        ~/.zshrc \
+        ~/.zshenv \
+        ~/zshell \
+        ~/bin
 }
 
 function reloadbash()
@@ -41,7 +73,88 @@ function reloadbash()
     source ~/.zprofile
 }
 
+function reloadbashf()
+{
+    echo 'Reloading bash functions'
+    source ~/zshell/.zprofile.functions
+}
+
+function scheck()
+{
+    if [[ -z "$@" ]] ; then
+        shellcheck -o all *.sh
+        return
+    fi
+
+    shellcheck -o all "$@"
+}
+
+
+# ------------------------------------------------------------------------------
+# kube helpers
+# ------------------------------------------------------------------------------
+
+function k()
+{
+    local command="${1}"
+
+    if [[ "${command}" == "k" ]] ; then
+        shift
+        kubectl "$@"
+
+    elif [[ -n "${command}" ]] ; then
+        shift
+        k_${command} "$@"
+    else
+        echo "k() requires a subcommand. Check in ~/zshell/.zprofile.functions"
+        return 1
+    fi
+}
+
+function k_all()
+{
+    kubectl get all,cm,secret,ing,serviceaccount,pv,pvc
+}
+
+function k_pods()
+{
+    kubectl get pods,deployments
+}
+
+function k_ns()
+{
+    kubectl get namespace
+}
+
+function k_busybox()
+{
+    kubectl run -i -t --image=busybox --restart=Never $@
+}
+
+# ------------------------------------------------------------------------------
 # aws helpers
+# ------------------------------------------------------------------------------
+
+function eksup()
+{
+    local -r cluster="${1}"
+    local extra=""
+    local -r default_region="us-east-1"
+
+    if [ -z "${cluster}" ] ; then
+        echo "Error: Cluster is required"
+        return 1
+    fi
+
+    if [ -n "${2}" ] ; then
+        extra="--region ${2}"
+    else
+        extra="--region $default_region"
+    fi
+
+    aws eks update-kubeconfig --name $cluster $extra
+}
+
 function ecrup()
 {
     local extra=""
@@ -60,6 +173,53 @@ function awsup()
 {
     eval $(aws_import_creds.sh)
 }
+
+# quickly switch between AWS profiles
+awsp() {
+    if [[ "${1}" == "clear" ]] ; then
+        if [[ -n "${AWS_PROFILE}" ]] ; then
+            echo 'Clearing $AWS_PROFILE'
+            unset AWS_PROFILE
+        else
+            echo 'No $AWS_PROFILE currently set'
+        fi
+    elif [[ "${1}" == "current" ]] ; then
+        if [[ -n "${AWS_PROFILE}" ]] ; then
+            awsp_current
+        else
+            echo 'No $AWS_PROFILE currently set'
+        fi
+    elif [[ -n $1 ]] ; then
+        # validate input
+        grep -q -w "\[profile ${1}\]" ~/.aws/config || { echo "No such profile $1"; return 1; }
+        export AWS_PROFILE=$1
+
+        # check if we already have valid creds
+        if ! aws sts get-caller-identity >/dev/null 2>&1; then
+            echo 'No auth found'
+        fi
+
+        awsp_current
+    else
+        echo 'No profile provided. (pass "clear" to clear profile)'
+        echo 'Select one:'
+        echo
+        aws configure list-profiles
+        return 2
+    fi
+}
+
+awsp_current() {
+    account_name=$(aws iam list-account-aliases --output text --query 'AccountAliases[0]' 2>/dev/null || true)
+    account_id=$(aws sts get-caller-identity --output text --query 'Account' 2>/dev/null || true)
+    aws_user=$(aws sts get-caller-identity --output text --query 'Arn' 2>/dev/null || true)
+
+    echo "Signed in to \"${account_name} (${account_id})\" as \"${aws_user}\""
+}
+
+# ------------------------------------------------------------------------------
+# general helpers
+# ------------------------------------------------------------------------------
 
 # Get public key for authorized_keys from a private key
 function getpubkey()
@@ -81,6 +241,10 @@ function dock_space()
    defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="spacer-tile";}'
    killall Dock
 }
+
+# ------------------------------------------------------------------------------
+# Mac M1 helpers
+# ------------------------------------------------------------------------------
 
 # Run a script or command with rosetta
 function x86()
