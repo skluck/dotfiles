@@ -16,18 +16,49 @@ function drun()
     docker run --rm -it $@
 }
 
+function drune()
+{
+    docker run --rm -it --entrypoint='' $@
+}
+
 # ------------------------------------------------------------------------------
 # terraform helpers
 # ------------------------------------------------------------------------------
 
-function tfmt()
+function tf()
+{
+    local command="${1}"
+
+    if [[ -n "${command}" ]] ; then
+        shift
+        tf_${command} "$@"
+    else
+        echo "tf() requires a subcommand. Check in ~/zshell/.zprofile.functions"
+        echo ""
+        echo "Try one of:"
+        echo "- tf fmt <dir>"
+        echo "- tf docs <dir>"
+        echo "- tf lock"
+        return 1
+    fi
+}
+
+function tf_fmt()
 {
     terraform fmt -write=false -diff -check -recursive $@
 }
 
-function tdocs()
+function tf_docs()
 {
     terraform-docs markdown table --output-file README.md $@
+}
+
+function tf_lock()
+{
+    terraform providers lock -platform=darwin_arm64 && \
+    terraform providers lock -platform=darwin_amd64 && \
+    terraform providers lock -platform=linux_amd64 && \
+    terraform providers lock -platform=linux_arm64
 }
 
 # ------------------------------------------------------------------------------
@@ -70,6 +101,7 @@ function editbash()
 
 function reloadbash()
 {
+    echo 'Reloading bash profile'
     source ~/.zprofile
 }
 
@@ -110,9 +142,22 @@ function k()
     fi
 }
 
+function k_getall()
+{
+    NAMES="$(kubectl api-resources \
+        --namespaced \
+        --verbs list \
+        -o name \
+    | tr '\n' ,)"
+
+    # ${NAMES:0:-1} -- because of `tr` command added trailing comma
+    # --show-kind is optional
+    kubectl get "${NAMES:0:-1}" --show-kind
+}
+
 function k_all()
 {
-    kubectl get all,cm,secret,ing,serviceaccount,pv,pvc
+    kubectl get all,cm,secret,ing,ingressroutes,serviceaccount,pv,pvc
 }
 
 function k_pods()
@@ -120,9 +165,40 @@ function k_pods()
     kubectl get pods,deployments
 }
 
+function k_podall()
+{
+    kubectl get pod -A '-o=custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace,STATUS:.status.phase,NODE:.spec.nodeName,CPU:.spec.containers[*].resources.requests.cpu,MEM:.spec.containers[*].resources.requests.memory'
+}
+
+function k_podcpu()
+{
+    kubectl get pod '-o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName,CPU:.spec.containers[*].resources.requests.cpu,MEM:.spec.containers[*].resources.requests.memory'
+}
+
+function k_logs()
+{
+    test -n "$1"
+    kubectl logs -f "$1"
+}
+
 function k_ns()
 {
     kubectl get namespace
+}
+
+function k_shell()
+{
+    test -n "$1"
+    kubectl exec --stdin --tty "$1" -- /bin/sh
+}
+
+function k_tunnel()
+{
+    test -n "$1"
+    test -n "$2"
+    IFS=: read -r from to <<< "$2"
+
+    kubectl port-forward $1 $from:$to
 }
 
 function k_busybox()
@@ -249,6 +325,11 @@ function dock_space()
 function x86()
 {
    arch --x86_64 $@
+}
+
+function m1()
+{
+   arch --arm64 $@
 }
 
 function whatami()
