@@ -78,8 +78,15 @@ fi
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 
 # git clone https://github.com/olivierverdier/zsh-git-prompt ~/zshell/git-prompt.zsh
-source ~/zshell/git-prompt.zsh/git-prompt.zsh
-source ~/zshell/git-prompt.zsh/examples/pure.zsh
+if [ -d ~"/zshell/git-prompt.zsh" ] ; then
+    source ~/zshell/git-prompt.zsh/git-prompt.zsh
+    source ~/zshell/git-prompt.zsh/examples/pure.zsh
+else
+    echo "ERROR: Missing clone of https://github.com/woefe/git-prompt.zsh. Prompt may be broken!"
+    echo "Run the following:"
+    echo "git clone https://github.com/woefe/git-prompt.zsh ~/zshell/git-prompt.zsh"
+    echo
+fi
 
 function awsprompt() {
     if [ -n "${AWS_PROFILE}" ] ; then
