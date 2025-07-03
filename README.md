@@ -1,6 +1,14 @@
 # Dotfiles and other development configuration
 
 
+### Important Apps
+
+- [bear](https://bear.app/) - Markdown note taker
+- [gitup](https://gitup.co/) - Git visualizer
+- [Amphetamine](https://apps.apple.com/us/app/amphetamine/id937984704?mt=12) - Keep mac awake
+- [Colima](https://github.com/abiosoft/colima) - Docker desktop replacement
+- [TablePlus](https://tableplus.com/) - Database management app
+
 ### Sublime Text Plugins
 - Bracket Highlighter - [packagecontrol.io](https://packagecontrol.io/packages/BracketHighlighter)
 - Color Highlighter - [packagecontrol.io](https://packagecontrol.io/packages/Color%20Highlighter)
@@ -13,3 +21,13 @@
     - SublimeLinter-php [packagecontrol.io](https://packagecontrol.io/packages/SublimeLinter-php)
     - SublimeLinter-eslint [packagecontrol.io](https://packagecontrol.io/packages/SublimeLinter-contrib-eslint)
 - Markdown Editing [packagecontrol.io](https://packagecontrol.io/packages/MarkdownEditing)
+
+### Important Config
+
+- Fonts:
+  - Source Code Pro
+  - Droid Sans Mono
+
+### Terminal Config
+
+See <Pro.terminal>
