@@ -7,7 +7,8 @@
 
 [core]
     excludesfile = ~/.gitignore-global
-    editor = "subl -w"
+    #editor = "subl -w"
+    editor = "code --wait"
     #pager = diff-so-fancy | less --tabs=4 -RFX
     page = delta
 
@@ -31,12 +32,19 @@
 [alias]
     mote = remote -v
     refresh = remote update -p
-    new = checkout origin/master -b
+    new = checkout origin/main -b
+    newmaster = checkout origin/master -b
+    newmain = checkout origin/main -b
+
+    sync = fetch origin main:main
+    syncmaster = fetch origin master:master
+    syncmain = fetch origin main:main
 
     fixup = commit --amend -C HEAD
     hard = reset --hard
     yolo = push --force
     unstage = reset HEAD --
+    empty = commit --allow-empty -m
 
     fshow = show --name-only
     lg = log --graph --abbrev-commit --date=relative
