@@ -269,7 +269,7 @@ function k_tunnelmake()
     test -n "$port" || {echo $help && return}
 
     service_name="$1-$(date -u '+%Y-%m-%d')"
-    docker_image=alpine/socat"
+    docker_image="alpine/socat"
 
     local_port="${port}${port: -1}"
 
