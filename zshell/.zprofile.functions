@@ -92,7 +92,7 @@ function gl()
 function editbash()
 {
     local command="${1}"
-    if [[ -n "${command}" ]] ; then
+    if [[ -z "${command}" ]] ; then
         command="code"
     fi
 
