@@ -91,7 +91,12 @@ function gl()
 
 function editbash()
 {
-    subl \
+    local command="${1}"
+    if [[ -n "${command}" ]] ; then
+        command="code"
+    fi
+
+    $command \
         ~/.zprofile \
         ~/.zshrc \
         ~/.zshenv \
@@ -101,13 +106,13 @@ function editbash()
 
 function reloadbash()
 {
-    echo 'Reloading bash profile'
+    echo 'Reloading shell profile'
     source ~/.zprofile
 }
 
 function reloadbashf()
 {
-    echo 'Reloading bash functions'
+    echo 'Reloading shell functions'
     source ~/zshell/.zprofile.functions
 }
 
@@ -138,8 +143,33 @@ function k()
         k_${command} "$@"
     else
         echo "k() requires a subcommand. Check in ~/zshell/.zprofile.functions"
+        grep "function k_" | ~/zshell/.zprofile.functions | grep -v "grep" | sort
         return 1
     fi
+}
+
+function k_all()
+{
+    kubectl get all,cm,secret,serviceaccount,pv,pvc,pdb,secret
+    kubectl get ing,ingressroutes
+    kubectl get scaledobject
+}
+
+function k_drain()
+{
+    help="Syntax: k drain NODE_NAME"
+    test -n "$1" || {echo $help && return}
+
+    set -x
+    kubectl drain $1 --ignore-daemonsets --delete-emptydir-data $@
+}
+
+function k_get()
+{
+    help="Syntax: k get RESOURCE"
+    test -n "$1" || {echo $help && return}
+
+    kubectl get -o=yaml $@
 }
 
 function k_getall()
@@ -155,14 +185,37 @@ function k_getall()
     kubectl get "${NAMES:0:-1}" --show-kind
 }
 
-function k_all()
+function k_logs()
 {
-    kubectl get all,cm,secret,ing,ingressroutes,serviceaccount,pv,pvc
+    help="Syntax: k logs POD_NAME"
+    test -n "$1" || {echo $help && return}
+
+    kubectl logs -f "$1"
+}
+
+function k_nodes()
+{
+    kubectl get nodes \
+    --sort-by=.metadata.creationTimestamp \
+    '-o=custom-columns=NAME:.metadata.name,STATUS:status.conditions[-1].type,AGE:.metadata.creationTimestamp,TYPE:.metadata.labels.node\.kubernetes\.io/instance-type,ID:.metadata:.metadata.annotations.csi\.volume\.kubernetes\.io/nodeid'
+}
+
+function k_node_pods()
+{
+    help="Syntax: k node_pods NODE_NAME"
+    test -n "$1" || {echo $help && return}
+
+    kubectl get pods -A -o wide --field-selector spec.nodeName="$1"
+}
+
+function k_ns()
+{
+    kubectl get namespace
 }
 
 function k_pods()
 {
-    kubectl get pods,deployments
+    kubectl get pods,deployments,jobs,daemonsets,statefulsets $@
 }
 
 function k_podall()
@@ -175,30 +228,59 @@ function k_podcpu()
     kubectl get pod '-o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName,CPU:.spec.containers[*].resources.requests.cpu,MEM:.spec.containers[*].resources.requests.memory'
 }
 
-function k_logs()
+function k_podbad()
 {
-    test -n "$1"
-    kubectl logs -f "$1"
-}
-
-function k_ns()
-{
-    kubectl get namespace
+    kubectl get pods -A \
+        | grep -v Running \
+        | grep -v Completed
 }
 
 function k_shell()
 {
-    test -n "$1"
+    help="Syntax: k shell POD_NAME"
+    test -n "$1" || {echo $help && return}
+
     kubectl exec --stdin --tty "$1" -- /bin/sh
 }
 
 function k_tunnel()
 {
-    test -n "$1"
-    test -n "$2"
-    IFS=: read -r from to <<< "$2"
+    help="Syntax: k tunnel POD_OR_SERVICE_NAME LOCAL_PORT:REMOTE_PORT"
+    test -n "$1" || {echo $help && return}
+    test -n "$2" || {echo $help && return}
 
+    IFS=: read -r from to <<< "$2"
+    test -n "$from" || {echo $help && return}
+    test -n "$to" || {echo $help && return}
+
+    set -x
     kubectl port-forward $1 $from:$to
+}
+
+function k_tunnelmake()
+{
+    # Format "k tunnelmake myservice database.example.com:5432"
+    help="Syntax: k tunnelmake TEMP_SERVICE_NAME DB_HOST:REMOTE_PORT"
+    test -n "$1" || {echo $help && return}
+    test -n "$2" || {echo $help && return}
+
+    IFS=: read -r endpoint port <<< "$2"
+    test -n "$endpoint" || {echo $help && return}
+    test -n "$port" || {echo $help && return}
+
+    service_name="$1-$(date -u '+%Y-%m-%d')"
+    docker_image=alpine/socat"
+
+    local_port="${port}${port: -1}"
+
+    echo "Run the following after tunnel service is up:"
+    echo "k tunnel service/$service_name ${local_port}:${port}"
+    echo
+
+    kubectl run "${service_name}" --image="${docker_image}" \
+    -it --tty --rm --expose=true --port=${port} \
+    tcp-listen:${port},fork,reuseaddr \
+    tcp-connect:${endpoint}:${port}
 }
 
 function k_busybox()

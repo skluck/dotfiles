@@ -14,7 +14,9 @@ if [[ "${arch}" == "x86_64" ]] ; then
     export LIBRARY_PATH="$HOME/homebrew-x86/lib:$LIBRARY_PATH"
 fi
 
-export PATH="$HOME/bin:$HOMEBREW_BIN:$PATH"
+KREW_BIN="$HOME/.krew/bin"
+
+export PATH="$HOME/bin:$KREW_BIN:$HOMEBREW_BIN:$PATH"
 
 export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_INSTALL_CLEANUP=1
@@ -60,6 +62,22 @@ if [[ $(command -v brew) ]] ; then
     if [[ -d "${PREFIX}" ]]; then
         source $PREFIX/libexec/asdf.sh
     fi
+fi
+
+# ------------------------------------------------------------------------------
+# direnv
+# ------------------------------------------------------------------------------
+
+if [[ $(command -v direnv) ]] ; then
+    eval "$(direnv hook zsh)"
+fi
+
+# ------------------------------------------------------------------------------
+# kubeswitch
+# ------------------------------------------------------------------------------
+
+if [[ $(command -v switcher) ]] ; then
+    source <(switcher init zsh)
 fi
 
 # ------------------------------------------------------------------------------
