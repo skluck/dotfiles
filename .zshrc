@@ -6,12 +6,16 @@ arch=$(uname -m)
 
 # Dynamically load which homebrew binaries based on terminal mode
 HOMEBREW_BIN="$HOME/homebrew/bin"
-if [[ "${arch}" == "x86_64" ]] ; then
-    echo "Loading x86 terminal..."
-    HOMEBREW_BIN="$HOME/homebrew-x86/bin"
-    export LD_LIBRARY_PATH="$HOME/homebrew-x86/lib:$LD_LIBRARY_PATH"
-    export DYLD_LIBRARY_PATH="$HOME/homebrew-x86/lib:$DYLD_LIBRARY_PATH"
-    export LIBRARY_PATH="$HOME/homebrew-x86/lib:$LIBRARY_PATH"
+
+if [[ $(command -v brew) ]] ; then
+    HOMEBREW_BIN="$(brew --prefix)/bin"
+    if [[ "${arch}" == "x86_64" ]] ; then
+        echo "Loading x86 terminal..."
+        HOMEBREW_BIN="$HOME/homebrew-x86/bin"
+        export LD_LIBRARY_PATH="$HOME/homebrew-x86/lib:$LD_LIBRARY_PATH"
+        export DYLD_LIBRARY_PATH="$HOME/homebrew-x86/lib:$DYLD_LIBRARY_PATH"
+        export LIBRARY_PATH="$HOME/homebrew-x86/lib:$LIBRARY_PATH"
+    fi
 fi
 
 KREW_BIN="$HOME/.krew/bin"
