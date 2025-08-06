@@ -22,6 +22,34 @@ function drune()
 }
 
 # ------------------------------------------------------------------------------
+# ai helpers
+# ------------------------------------------------------------------------------
+
+function ai()
+{
+    local command="${1}"
+
+    if [[ -n "${command}" ]] ; then
+        shift
+        ai_${command} "$@"
+    else
+        echo "ai_() requires a subcommand. Check in ~/zshell/.zprofile.functions"
+        grep "function ai_" ~/zshell/.zprofile.functions | grep -v "grep" | sort
+        return 1
+    fi
+}
+
+function ai_run()
+{
+    gh models run "openai/gpt-4.1" $@
+}
+
+function ai_which()
+{
+    gh models list
+}
+
+# ------------------------------------------------------------------------------
 # terraform helpers
 # ------------------------------------------------------------------------------
 
@@ -162,6 +190,15 @@ function k_drain()
 
     set -x
     kubectl drain $1 --ignore-daemonsets --delete-emptydir-data $@
+}
+
+function k_explain()
+{
+    help="Syntax: k explain RESOURCE.PATH"
+    test -n "$1" || {echo $help && return}
+
+    set -x
+    kubectl explain $@ --recursive
 }
 
 function k_get()
